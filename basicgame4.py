@@ -1,6 +1,3 @@
-# https://realpython.com/pygame-a-primer/
-
-
 import random
 import pygame
 from pygame.locals import (
@@ -11,6 +8,7 @@ from pygame.locals import (
     K_RIGHT,
     K_ESCAPE,
     KEYDOWN,
+    K_p,
     QUIT
 ) 
 
@@ -74,10 +72,6 @@ class Enemy(pygame.sprite.Sprite):
         super(Enemy, self).__init__()
         self.surf = pygame.image.load("assets/emoji_enemy_rect3.png").convert()
         self.surf.set_colorkey((255, 255, 255),  RLEACCEL)
-        
-
-        # self.surf = pygame.Surface((20, 10))
-        # self.surf.fill((255, 255, 255))
         self.rect = self.surf.get_rect(
             center=(
                 random.randint(SCREEN_WIDTH + 20, SCREEN_WIDTH + 100),
@@ -122,12 +116,14 @@ highscore = 0
 total_score = 0
 current_enemies = 0
 tmp_var = -1
+startgame = False
+test_score = 0
 
 pygame.mixer.music.load("assets/emoji_man_song3.mp3")
 pygame.mixer.music.play(loops =- 1)
 
 ADDENEMY = pygame.USEREVENT + 1
-pygame.time.set_timer(ADDENEMY, 250)
+pygame.time.set_timer(ADDENEMY, 150)
 ADDCLOUD = pygame.USEREVENT + 2
 pygame.time.set_timer(ADDCLOUD, 1000)
 
@@ -141,24 +137,14 @@ all_sprites = pygame.sprite.Group()
 all_sprites.add(player)
 
 
-
-# surf = pygame.Surface((50, 50))
-# surf.fill((0, 0, 0))
-# rect = surf.get_rect()
-
-#screen.blit(surf, ((SCREEN_WIDTH - surf.get_width()) / 2, (SCREEN_HEIGHT - surf.get_height()) / 2))
-#pygame.display.flip()
-
-#surf_center = ((SCREEN_WIDTH - surf.get_width()) / 2, (SCREEN_HEIGHT - surf.get_height()) / 2)
-#screen.blit(surf, surf_center)
-
-
 running = True
 while running:
     for event in pygame.event.get():
         if event.type == KEYDOWN:
             if event.key == K_ESCAPE:
                 running = False
+            if event.key == K_p:
+                startgame = True
 
         elif event.type == QUIT:
             running = False
@@ -167,9 +153,7 @@ while running:
             new_enemy = Enemy()
             enemies.add(new_enemy)
             all_sprites.add(new_enemy)
-            # print("ALL", all_sprites)
-            # print("NEW", new_enemy)
-            # print("ENEMIES", enemies)
+            test_score = test_score + 1 
 
         elif event.type == ADDCLOUD:
             new_cloud = Cloud()
@@ -191,7 +175,22 @@ while running:
 
     for entity in all_sprites:        
         screen.blit(entity.surf, entity.rect)
-    #screen.blit(player.surf, player.rect)
+
+    while startgame == False:
+        font = pygame.font.SysFont("arial", 50)
+        total_score = font.render(f"Press 'p' to start your game. :D ", True, (255, 255, 0))
+        screen.blit(total_score, (SCREEN_WIDTH / 2 - 350, SCREEN_HEIGHT / 2))
+        for event in pygame.event.get():
+            if event.type == KEYDOWN:
+                print(event.type)
+                if event.key == K_ESCAPE:
+                    print(event.key)
+                    running = False
+                    startgame = True
+                if event.key == K_p:
+                    startgame = True
+        pygame.display.flip()
+        clock.tick(60)
 
     
     # längd på antal aktiva sprites 0 1 2 3 2 3 
@@ -212,18 +211,12 @@ while running:
     if current_enemies > tmp_var:
         tmp_var = current_enemies - 1
     print(highscore * 10)
+    print(test_score)
+    
 
 
-    # an instance/object of SysFont class, argument a string with the font and the size as an integer  
-    font = pygame.font.SysFont("arial", 50)
-    # a variable from the method of the "font"-object given a formated string as an argument 
-    total_score = font.render(f"Score: {highscore * 10}", True, (255, 255, 0))
-    # the blit method is called on the screen object given the "total_score"-variable and it's position as arguments 
-    screen.blit(total_score, (SCREEN_WIDTH - SCREEN_WIDTH + 10, 10))
-
-
-    if pygame.sprite.spritecollideany(player, enemies):   
-        game_over = font.render(f"Your final score: {highscore * 10} ", True, (255, 255, 0))
+    if pygame.sprite.spritecollideany(player, enemies):
+        game_over = font.render(f"Your final score: {test_score * 10} ", True, (255, 255, 0))
         player.win()
         screen.blit(game_over, (SCREEN_WIDTH / 2 - 250, SCREEN_HEIGHT / 2 - 25))
         screen.blit(player.surf, player.rect)
@@ -232,6 +225,15 @@ while running:
         pygame.time.delay(2000)
         player.kill()
         running = False
+
+    display_score = True
+    if display_score:
+    # an instance/object of SysFont class, argument a string with the font and the size as an integer  
+        font = pygame.font.SysFont("arial", 50)
+    # a variable from the method of the "font"-object given a formated string as an argument 
+        total_score = font.render(f"Score: {test_score * 10}", True, (255, 255, 0))
+    # the blit method is called on the screen object given the "total_score"-variable and it's position as arguments 
+        screen.blit(total_score, (SCREEN_WIDTH - SCREEN_WIDTH + 10, 10))
 
     pygame.display.flip()
     clock.tick(60)
